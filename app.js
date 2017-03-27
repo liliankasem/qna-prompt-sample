@@ -46,7 +46,7 @@ bot.dialog('/', [
 bot.dialog('/qa', (session, results) => {
     var client = restify.createJsonClient('https://westus.api.cognitive.microsoft.com');
     var options = {
-        path: '/qnamaker/v1.0/knowledgebases/2605228c-265b-4dda-8b1d-1ac586784723/generateAnswer',
+        path: '/qnamaker/v2.0/knowledgebases/2605228c-265b-4dda-8b1d-1ac586784723/generateAnswer',
         headers: {
             'Ocp-Apim-Subscription-Key': '866f19d486274c8196bb1569a8a58c6b'
         }
@@ -55,12 +55,14 @@ bot.dialog('/qa', (session, results) => {
     var question = {"question": results.question};
 
     client.post(options, question, (err, req, res, obj) => {
-        if(err == null){
-            if(parseInt(obj.score) > 0.5){
-                 session.endDialog(obj.answer);
-            }else{
-                session.endDialog('No good match in FAQ.');
-            }      
+        if(err == null && obj.answers.length > 0){
+            for(var i in obj.answers){
+                if(parseInt(obj.answers[i].score) > 0.5){
+                    session.endDialog(obj.answers[i].answer);
+                }else{
+                    session.endDialog('No good match in FAQ.');
+                }  
+            }    
         }else{
             session.endDialog('Sorry, there was an error!');
         }

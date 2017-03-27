@@ -57,7 +57,7 @@ bot.dialog('/qa', (session, results) => {
     client.post(options, question, (err, req, res, obj) => {
         if(err == null && obj.answers.length > 0){
             for(var i in obj.answers){
-                if(parseInt(obj.answers[i].score) > 0.5){
+                if(parseInt(obj.answers[i].score) > 0.80){
                     session.endDialog(obj.answers[i].answer);
                 }else{
                     session.endDialog('No good match in FAQ.');

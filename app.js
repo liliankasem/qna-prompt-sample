@@ -38,8 +38,11 @@ bot.dialog('/', [
         }else if(noResponse.test(results.response)){
             session.send("Well, I guess that's a no :(");
         }else{
-            session.replaceDialog('/qa', { question : results.response});
+            session.beginDialog('/qa', { question : results.response});
         }
+    },
+    (session) => {
+        session.endDialog("I will come to this step in the waterfall after I answer your QnA question");
     }
 ]);
 

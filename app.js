@@ -66,9 +66,8 @@ bot.dialog('/', (session) => {
                 if (parseInt(obj.answers[i].score) > 0.80) {
                     session.endDialog(obj.answers[i].answer);
                 } else {
-                    session.userData.convoId = session.message.address.conversation.id;
                     session.send('No good match in FAQ. Handing you off to next available agent, please hold while we connect you...');
-                    session.replaceDialog('/handoff');
+                    session.replaceDialog('/handoff', { id: session.message.address.conversation.id});
                 }
             }
         } else {
@@ -86,7 +85,7 @@ bot.dialog('/handoff',
                 "Authorization": "Bearer " + process.env.MICROSOFT_DIRECTLINE_SECRET
             }
         };
-        handoff.post(options, { "conversationId": session.userData.convoId }, (err, req, res, obj) => {
+        handoff.post(options, { "conversationId": args.id }, (err, req, res, obj) => {
             if (err == null) {
                 session.send("You have been queued up to speak to a live agent.");
             } else {

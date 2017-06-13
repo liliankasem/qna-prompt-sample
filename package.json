@@ -10,6 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "botbuilder": "^3.7.0",
+    "botbuilder-handoff": "^0.1.1",
+    "express": "^4.15.3",
     "restify": "^4.3.0"
   }
 }

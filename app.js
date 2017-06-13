@@ -57,7 +57,6 @@ bot.dialog('/', (session) => {
         path: '/qnamaker/v2.0/knowledgebases/5320e095-4d9f-4ea7-a012-342ea77cfa8b/generateAnswer',
         headers: {
             'Ocp-Apim-Subscription-Key': '472e6a5475bf4c0ab0e9448bb1200b6f'
-            //472e6a5475bf4c0ab0e9448bb1200b6f
         }
     };
 

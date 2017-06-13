@@ -54,9 +54,10 @@ bot.dialog('/', (session) => {
     var question = { "question": session.message.text };
     var client = restify.createJsonClient('https://westus.api.cognitive.microsoft.com');
     var options = {
-        path: '/qnamaker/v2.0/knowledgebases/2605228c-265b-4dda-8b1d-1ac586784723/generateAnswer',
+        path: '/qnamaker/v2.0/knowledgebases/5320e095-4d9f-4ea7-a012-342ea77cfa8b/generateAnswer',
         headers: {
-            'Ocp-Apim-Subscription-Key': '866f19d486274c8196bb1569a8a58c6b'
+            'Ocp-Apim-Subscription-Key': '472e6a5475bf4c0ab0e9448bb1200b6f'
+            //472e6a5475bf4c0ab0e9448bb1200b6f
         }
     };
 

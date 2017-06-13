@@ -50,30 +50,8 @@ bot.use(
     builder.Middleware.sendTyping()
 );
 
-//regex
-const yesResponse = /yes|yeah|sure|yup|okay|ok|^y/i;
-const noResponse = /no|nope|nah|^n/i;
-
-bot.dialog('/', [
-    (session) => {
-        builder.Prompts.text(session, "What do you want to ask?");
-    },
-    (session, results) => {
-        if (yesResponse.test(results.response)) {
-            session.send("Alright, here we go!");
-        } else if (noResponse.test(results.response)) {
-            session.send("Well, I guess that's a no :(");
-        } else {
-            session.beginDialog('/qa', { question: results.response });
-        }
-    },
-    (session) => {
-        session.send("I will come to this step in the waterfall after I answer your QnA question");
-        session.replaceDialog('/handoff');
-    }
-]);
-
-bot.dialog('/qa', (session, results) => {
+bot.dialog('/', (session) => {
+    var question = { "question": session.message.text };
     var client = restify.createJsonClient('https://westus.api.cognitive.microsoft.com');
     var options = {
         path: '/qnamaker/v2.0/knowledgebases/2605228c-265b-4dda-8b1d-1ac586784723/generateAnswer',
@@ -82,8 +60,6 @@ bot.dialog('/qa', (session, results) => {
         }
     };
 
-    var question = { "question": results.question };
-
     client.post(options, question, (err, req, res, obj) => {
         if (err == null && obj.answers.length > 0) {
             for (var i in obj.answers) {
@@ -91,7 +67,8 @@ bot.dialog('/qa', (session, results) => {
                     session.endDialog(obj.answers[i].answer);
                 } else {
                     session.userData.convoId = session.message.address.conversation.id;
-                    session.endDialog('No good match in FAQ. Handing you off to next available agent, please hold while we connect you...');
+                    session.send('No good match in FAQ. Handing you off to next available agent, please hold while we connect you...');
+                    session.replaceDialog('/handoff');
                 }
             }
         } else {
@@ -103,20 +80,18 @@ bot.dialog('/qa', (session, results) => {
 bot.dialog('/handoff',
     (session, args) => {
         var port = process.env.port || process.env.PORT || 3978;
-        var handoff = restify.createJsonClient(`http://localhost:3978/api/conversations`);
+        var handoff = restify.createJsonClient(`http://localhost:${port}/api/conversations`);
         var options = {
-            body: {
-                "conversationId": session.userData.convoId
-            },
             headers: {
                 "Authorization": "Bearer " + process.env.MICROSOFT_DIRECTLINE_SECRET
             }
         };
-        handoff.post(options, (err, req, res, obj) => {
+        handoff.post(options, { "conversationId": session.userData.convoId }, (err, req, res, obj) => {
             if (err == null) {
-                console.log("It worked. Tell the user, they are in a queue to chat with someone");
+                session.send("You have been queued up to speak to a live agent.");
             } else {
                 console.log("Tell the user something went wrong.", err.code, err.message);
+                session.endConversation("Sorry, something went wrong! We are restarting the bot.");
             }
         });
     }

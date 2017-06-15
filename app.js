@@ -1,8 +1,10 @@
 const restify = require('restify');
 const builder = require('botbuilder');
-
+const _ = require("lodash");
 const express = require('express');
 const bot_handoff = require('botbuilder-handoff');
+
+let appInsights = require('applicationinsights');
 
 const connector = new builder.ChatConnector({
     appId: process.env.MICROSOFT_APP_ID,
@@ -11,37 +13,19 @@ const connector = new builder.ChatConnector({
 
 const bot = new builder.UniversalBot(connector);
 
-// Setup Restify Server
-// const server = restify.createServer();
-// server.use(restify.acceptParser(server.acceptable));
-// server.use(restify.gzipResponse());
-// server.use(restify.bodyParser());
-// server.listen(process.env.port || 3978, function () {
-//     console.log('%s listening to %s', server.name, server.url);
-// });
-// server.post('/api/messages', connector.listen());
-
 const app = express();
 app.listen(process.env.port || process.env.PORT || 3978, '::', () => {
     console.log('Server Up');
 });
 app.post('/api/messages', connector.listen());
 
-// Replace this functions with custom login/verification for agents 
 const isAgent = (session) => session.message.user.name.startsWith("Agent");
 
-/**
-    bot: builder.UniversalBot
-    app: express ( e.g. const app = express(); )
-    isAgent: function to determine when agent is talking to the bot
-    options: { }
-        - mongodbProvider and directlineSecret are required (both can be left out of setup options if provided in environment variables.)
-        - textAnalyiticsKey is optional. This is the Microsoft Cognitive Services Text Analytics key. Providing this value will result in running sentiment analysis on all user text, saving the sentiment score to the transcript in mongodb.
-**/
 bot_handoff.setup(bot, app, isAgent, {
     mongodbProvider: process.env.MONGODB_PROVIDER,
     directlineSecret: process.env.MICROSOFT_DIRECTLINE_SECRET,
-    textAnalyticsKey: process.env.CG_SENTIMENT_KEY
+    textAnalyticsKey: process.env.CG_SENTIMENT_KEY,
+    appInsightsInstrumentationKey: process.env.APPINSIGHTS_INSTRUMENTATIONKEY
 });
 
 // Middleware
@@ -49,6 +33,7 @@ bot.use(
     builder.Middleware.dialogVersion({ version: 0.2, resetCommand: /^reset/i }),
     builder.Middleware.sendTyping()
 );
+
 
 bot.dialog('/', (session) => {
     var question = { "question": session.message.text };
@@ -87,7 +72,7 @@ bot.dialog('/handoff',
         };
         handoff.post(options, { "conversationId": args.id }, (err, req, res, obj) => {
             if (err == null) {
-                session.send("You have been queued up to speak to a live agent.");
+                session.endDialog("You have been queued up to speak to a live agent.");
             } else {
                 console.log("Tell the user something went wrong.", err.code, err.message);
                 session.endConversation("Sorry, something went wrong! We are restarting the bot.");

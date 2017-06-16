@@ -2,7 +2,7 @@ const restify = require('restify');
 const builder = require('botbuilder');
 const _ = require("lodash");
 const express = require('express');
-const bot_handoff = require('botbuilder-handoff');
+const handoff = require('botbuilder-handoff');
 
 let appInsights = require('applicationinsights');
 
@@ -20,12 +20,13 @@ app.listen(process.env.port || process.env.PORT || 3978, '::', () => {
 app.post('/api/messages', connector.listen());
 
 const isAgent = (session) => session.message.user.name.startsWith("Agent");
-
-bot_handoff.setup(bot, app, isAgent, {
+handoff.setup(bot, app, isAgent, {
     mongodbProvider: process.env.MONGODB_PROVIDER,
     directlineSecret: process.env.MICROSOFT_DIRECTLINE_SECRET,
     textAnalyticsKey: process.env.CG_SENTIMENT_KEY,
-    appInsightsInstrumentationKey: process.env.APPINSIGHTS_INSTRUMENTATIONKEY
+    appInsightsInstrumentationKey: process.env.APPINSIGHTS_INSTRUMENTATIONKEY,
+    retainData: process.env.RETAIN_DATA,
+    customerStartHandoffCommand: process.env.CUSTOMER_START_HANDOFF_COMMAND
 });
 
 // Middleware

@@ -11,7 +11,7 @@
   "dependencies": {
     "applicationinsights": "^0.20.1",
     "botbuilder": "^3.7.0",
-    "botbuilder-handoff": "file:///Users/lilian/GitHub/Bot-HandOff/handoff-publish", //change to "^0.1.5"
+    "botbuilder-handoff": "^0.1.6", 
     "express": "^4.15.3",
     "lodash": "^4.17.4",
     "restify": "^4.3.0"
